@@ -402,3 +402,233 @@ let calculadora = {
 }
 console.log(`2 + 3 = ${calculadora.soma(2, 3)}`);
 console.log(`2 - 3 = ${calculadora.subtracao(2, 3)}`);
+
+____________________________________________________________________
+
+CAPÍTULO [03]
+EXECUÇÃO SÍNCRONA E ASSINCRONA
+
+3.1 //Modelo Single: Threaded_________________________________________
+/* Ambientes de execução JavScript são Single Threaded. Isso quer dizer,
+que há um único fluxo de execução. As instruções são executadas uma
+após a outra, na ordem em que foram definidas. */
+
+console.log('Eu primeiro')
+console.log("Agora eu")
+console.log("Sempre  vou ser a última....:(")
+
+/*__________    __________    __________    __________    __________*/
+01 /*EXEMPLO | Um funcionamento desejável.*/
+const A = 2 + 7
+const B = 5
+//só faz sentido a execução se o svalores A e B já estiverem disponíveis
+console.log(a + b);
+
+/*__________    __________    __________    __________    __________*/
+02 /*EXEMPLO | Função cuja execução demora uma qtd. de segundos. A instrução
+chamada não depende do resultado que ela produz.*/
+
+function demorada(){
+    const atualMais2Segundos = new Date().getTime + 2000;
+    while(newDate().getTime() <= atualMais2Segundos);
+    const d = 8 + 4;
+    return d;
+}
+const a1 = 2 + 3;
+const b1 = 5 + 9;
+const d = demorada()
+//o valor de E não depende do valor devolvido pela função
+
+const E = 2 + a + b;
+console.log(E); //resultado: 21
+
+/*Esse modelo de execução é conhecido como SINCRONO ou BLOUEANTE.  */
+
+/*__________    __________    __________    __________    __________*/
+03 /*EXEMPLO | Função setTimeout - recebe dois parâmetros, uma função e 
+um valor em milisegundos. A execução da função só ocorre uma vez que pelo
+menos a qtd. de milissegundos especificada se esgote. As instruções
+que vem depois da chamada da função continuam executando normalmente. Elas
+não ficam BLOQUEADAS*/
+
+
+//NÃO BLOQUEANTE
+function demorada(){
+    const atualMais2Segundos = new Date().getTime + 2000;
+    while(newDate().getTime() <= atualMais2Segundos);
+    const d = 8 + 4;
+    return d;
+}
+const a2 = 2 + 3;
+const b2 = 5 + 9;
+//função será executada depois de pelo menos, 500 milissegundos
+setTimeout(function(){
+    const d = demorada()
+    console.log(d)
+}, 500)
+//enquanto isso, essas linhar prosseguem executando, não esperam
+const e2 = a2 + b2;
+console.log(e2);
+
+/*A função que foi entregue como parâmetro à função setTimeout foi, na
+verdade enfileirada. Ela somente vai executar depois de o bloco principal ter
+sido completamente executado.*/
+
+/*__________    __________    __________    __________    __________*/
+04 /*EXEMPLO | Tecninamente, a função poderia ser executada imediatamente. 
+Porém, isso não acontecerá, devido ao enfileitamento.*/
+
+setTimeout(functino(){
+    console.log('dentro datime out', 0)
+})
+const A1 = new Date(). getTime() + 1000
+while(newDate().getTime <= A1);
+console.log('fora da time out');
+
+
+/*__________    __________    __________    __________    __________*/
+05 /*EXEMPLO | O enfileiramente acontecendo somente depois de o tempo 
+especificado no segundo parametro da function setTimeour acabar.*/
+
+function Demorada(tempo){
+    console.log(`demorada ${tempo}`);
+    const atualMaisTempo = newDate().getTime() + tempo;
+
+    while(newDate().getTime() <= atualMaisTempo);
+    const d = 8+4;
+    return d;
+}
+setTimeout(funciton(){demorada(2000)}, 2000);
+setTimeout(funciton(){demorada(1000)}, 1000);
+console.log("chegou ao fim do script");
+
+/*__________    __________    __________    __________    __________*/
+06 /*EXEMPLO | Sistema de arquivos - fazer a leitura do conteúdo de um
+arquivo. Quando concluído, o conteúdo é exibido. O códido é executado em
+uma única thread. A leitura do arquivo será realizada pela função readFile.*/
+
+const fs = require("fs");
+const abrirArquivo = function(nomeArquivo){
+    const exibirConteudo = function (erro, conteudo){
+        if(erro){
+            console.log(`Deu erro: ${erro}`);
+        }else{
+            console.log(conteudo.toString());
+        }
+    };
+    fs.readFile(nomeArquivo, exibirConteudo);
+};
+abrirArquivo("arquivo.txt");
+
+/*__________    __________    __________    __________    __________*/
+
+3.2 //Callbacks_______________________________________________________
+/* Uma função callback entra em execução quando um evento determinado 
+acontece. Callback hell - aninhamento de funções callback */
+
+01 /*EXEMPLO | Calback Hells - Dobrar o valro lido do arquivo.txt e armazenar
+o valor obtido em um arquivo chamado dobro.txt*/
+
+const fs = require("fs");
+const abrirArquivo = function(nomeArquivo){
+    const exibirConteudo = function (erro, conteudo){
+        if (erro) {
+            console.log(`Deu erro: ${erro}`);
+        }else{
+            console.log(conteudo.toString());
+            const dobro = +conteudo.toString() * 2;
+            const finalizar = function (erro){
+                if (erro){
+                    console.log('Deu erro tentando salvar o dobro')
+                }else{
+                    console.log("Salvou o dobro com sucesso");
+                }
+            }
+            fs.writeFile('dobro.txt', dobro.toString(), finalizar);
+        }
+    };
+    fs. readFile(nomeArquivo, exibirConteudo);
+}
+abrirArquivo("arquivo.txt");
+
+
+/*__________    __________    __________    __________    __________*/
+
+3.3 //Promisses_______________________________________________________
+/* Mecanismo próprio para a manipulação de código assincrono que visa 
+simplificar as características inerentes ao uso de callbacks
+
+Estados:
+- pending: quando é produzida e o processamento associado a ela ainda não
+está concluído.
+- fulfilled: quando o processamento associado a uma promise termina com 
+sucesso.
+-rejected: quando o processamento termina com erro.
+
+[!] Uma vez que uma promise se encontre em um desses estados, ela nunca transita
+para outro estado.
+
+/*Um Fluxo em que todas as promises terminam com sucesso. Encadeamento
+feito pela função then. Em caso de erro, o encadeamento é feito pela função
+catch.*/
+
+/*__________    __________    __________    __________    __________*/
+01 /*EXEMPLO | Uma função que constrói um objeto do tipo Promise e o devolve imediatamente,
+no estado Pending. Depois de prosseguir, ela pode terminar com sucesso ou 
+erro. */
+
+/*A função assincrona devolve uma promise em estado Pending. Quando termina,
+ela chama a função resolve, o que quer dizer que a promise passou de
+Pending para Fullfilled */
+
+function calculoDemorado(numero){
+    return new Promise(function(resolve, reject){
+        let res = 0;
+        for(let i = 1; i <= numero; i++){
+            rest += i;
+        }
+        resolve(res);
+    });
+}
+calculoDemorado(10).then((resultado) => {
+    console.log(resultado)
+})
+
+/*__________    __________    __________    __________    __________*/
+02 /*EXEMPLO | Dado que cálculo não precisa ser demorado, a função assincrona
+pode devolver uma promise já no estado Fullfilled.*/
+
+function calculaRapido(nuero){
+    return Promise.resolve((numero * (numero + 1)) /2);
+}
+calculoRapido (10.then(resultado =>{
+    console.log (resultado)
+}))
+//é executado primeiro, apesar da promise já estar fullfilled
+console.log('Esperando...')
+
+/*__________    __________    __________    __________    __________*/
+03 /*EXEMPLO | Também pode ser devolvida já no estado Rejected.*/
+
+calculoRapido(numero){
+    return numero >= 0
+    ? Promise.resolve((numero * (numero + 1))/2)
+    : Promise.reject("Somente valores positivos, por favor")
+}
+
+calculoRapido(10).then((resultado) => {
+    console.log(resultado);
+}).catch((err) => {
+    console.log(err);
+});
+
+calculoRapido( -1).then ((resultado) => {
+    console.log(resultado);
+}).catch((err) => {
+    console.log(err);
+});
+console.log("esperando.....");
+
+/*__________    __________    __________    __________    __________*/
+
+3.4 //Async/Await___________________________________________________
